@@ -1,0 +1,5 @@
+# Ignore R temporary files
+*.RData
+*.Rproj
+*.Rproj.user
+scripts/.Rapp.history
