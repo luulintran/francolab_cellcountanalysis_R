@@ -1,0 +1,27 @@
+{
+    "id": "B4F4B7EC",
+    "path": "~/Desktop/cellcount_analysis_r/francolab_cellcountanalysis_R/scripts/scripts_percentage_2groups/01_preprocess_data_2groups.R",
+    "project_path": "scripts/scripts_percentage_2groups/01_preprocess_data_2groups.R",
+    "type": "r_source",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1738696536149.0,
+    "source_on_save": false,
+    "relative_order": 4,
+    "properties": {
+        "tempName": "Untitled1",
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "58,15",
+        "scrollLine": "31"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1738696919,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1738696919490,
+    "read_only": false,
+    "read_only_alternatives": []
+}

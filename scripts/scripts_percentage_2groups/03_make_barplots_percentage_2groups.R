@@ -1,0 +1,136 @@
+# SET UP: ----------------------------------------------------------------------
+library(tidyr)
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(car)
+library(rlang)
+
+# LOAD OBJECTS FROM 02_statstests_2groups.R
+source("scripts/scripts_percentage_2groups/02_statstests_percentage_2groups.R")
+
+# 5. GENERATE BAR PLOTS: -------------------------------------------------------
+
+# Define function for making barplots: *****************************************
+create_barplot <- function(data_summ, 
+                           data_marker, 
+                           treatment_col = "treatment",
+                           marker_col = "marker", 
+                           title = "Title", 
+                           positions = c("pcig", "dnrbpj"),
+                           test_used = "stats test",
+                           p_value = NA) {
+  
+  scaleFUN <- function(x) sprintf("%.1f", x) # Function to format y-axis
+  
+  # Creating the plot
+  barplot <- ggplot(data_summ, 
+                    aes(x = !!sym(treatment_col), 
+                        y = mean_cells)) + 
+    geom_col(width = 0.5, 
+             aes(fill = !!sym(treatment_col)), 
+             color = 'black', 
+             size = 0.5) + 
+    geom_errorbar(aes(ymin = mean_cells - SE_cells, 
+                      ymax = mean_cells + SE_cells), 
+                  width = 0.3, 
+                  size = 0.5) + 
+    geom_dotplot(data = data_marker, 
+                 aes(x = !!sym(treatment_col), 
+                     y = !!sym(marker_col), 
+                     fill = !!sym(treatment_col)), 
+                 binaxis = 'y', 
+                 stackdir = 'center', 
+                 dotsize = 0.8, 
+                 show.legend = FALSE) + 
+    theme_classic(base_size = 12) + 
+    ylab("% of GFP+ cells") + 
+    scale_x_discrete(limits = positions) + 
+    theme(
+      panel.background = element_blank(),
+      plot.background = element_blank(),
+      axis.line = element_line(size = 0.5, 
+                               color = rgb(0, 0, 0, max = 255)), 
+      axis.text.x = element_text(colour = 'black', angle = 45, hjust = 1), 
+      axis.text.y = element_text(hjust = 1, colour = 'black'), 
+      axis.title.x = element_blank(), 
+      aspect.ratio = 2 / 1, 
+      legend.key.size = unit(0.7, "line"), 
+      text = element_text(size = 14), 
+      plot.title = element_text(size = 14)) + 
+    scale_y_continuous(expand = c(0, 0), labels = scaleFUN) + 
+    scale_fill_manual(values = c('gray', 'white'), 
+                      name = "", 
+                      labels = c("pcig", "dnrbpj")) + 
+    ggtitle(title) + 
+    theme(legend.position = "none") + 
+    annotate("text", 
+             x = 1.5, 
+             y = max(data_summ$mean_cells) + 0.5, 
+             label = paste(test_used, 
+                           "\np-value =", 
+                           format(p_value, digits = 3)), 
+             size = 2, 
+             hjust = 0.5)
+  
+  return(barplot)
+}
+# ******************************************************************************
+
+# Call function to generate bar plots and save as PDF
+
+# OLIG2+ ************************************************************************
+olig2_barplot <- create_barplot(data_summ = data_summ_olig2, 
+                                data_marker = data.olig2, 
+                                marker_col = "olig2", 
+                                title = "% OLIG2+ cells", 
+                                positions = c("pcig", "dnrbpj"),
+                                test_used = olig2_test_results$Test_Used, 
+                                p_value = olig2_test_results$Test_Result$p.value)
+
+# set up filename and save
+filename = "results/percentage_results/dnrbpj_olig2_barplot.pdf"
+pdf(filename, width = 5, height = 5)
+print(olig2_barplot)
+
+dev.off()
+
+print("OLIG2+ barplot generated and saved")
+
+# OLIG2+ PDGFRA+ ***************************************************************
+olig2_pdgfra_barplot <- create_barplot(data_summ = data_summ_olig2_pdgfra, 
+                                       data_marker = data.olig2.pdgfra, 
+                                       marker_col = "olig2_pdgfra", 
+                                       title = "% OLIG2+ PDGFRA+ cells", 
+                                       positions = c("pcig", "dnrbpj"),
+                                       test_used = olig2_pdgfra_test_results$Test_Used, 
+                                       p_value = olig2_pdgfra_test_results$Test_Result$p.value)
+
+# set up filename and save
+filename = "results/percentage_results/dnrbpj_olig2_pdgfra_barplot.pdf"
+pdf(filename, width = 5, height = 5)
+print(olig2_pdgfra_barplot)
+
+dev.off()
+
+print("OLIG2+ PDGFRA+ barplot generated and saved")
+
+# OLIG2+ PDGFRA- ***************************************************************
+olig2_pdgfraneg_barplot <- create_barplot(data_summ = data_summ_olig2_pdgfraneg, 
+                                          data_marker = data.olig2.pdgfraneg, 
+                                          marker_col = "olig2_pdgfraneg", 
+                                          title = "% OLIG2+ PDGFRA- cells", 
+                                          positions = c("pcig", "dnrbpj"),
+                                          test_used = olig2_pdgfraneg_test_results$Test_Used, 
+                                          p_value = olig2_pdgfraneg_test_results$Test_Result$p.value)
+
+# set up filename and save
+filename = "results/percentage_results/dnrbpj_olig2_pdgfraneg_barplot.pdf"
+pdf(filename, width = 5, height = 5)
+print(olig2_pdgfraneg_barplot)
+
+dev.off()
+
+print("OLIG2+ PDGFRA- barplot generated and saved")
+
+

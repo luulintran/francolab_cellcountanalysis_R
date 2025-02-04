@@ -1,0 +1,5 @@
+"0","# Here, we are reading in the csv file and saving it as an object called 'data'. Make sure the path to your data is correct or there will be an error because you didn't give R the correct 'directions' to get to your file. "
+"0",""
+"0","data <-"
+"0","  read.csv(""data/percentage_data/2021-05-06_cd1_e15-18_dnrbpj_olig2_pdgfra.csv"")"
+"0",""
