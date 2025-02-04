@@ -1,5 +1,0 @@
-"0","as.data.frame(olig2_test_results)
-"
-"2","Error in as.data.frame.default(x[[i]], optional = TRUE, stringsAsFactors = stringsAsFactors) : 
-  cannot coerce class ‘""htest""’ to a data.frame
-"

@@ -1,6 +1,0 @@
-"0","# Call function and save each marker as its own dataframe "
-"0","data_summ_olig2 <- summ_data_function(data.olig2, olig2)"
-"0","data_summ_olig2_pdgfra <- summ_data_function(data.olig2.pdgfra, olig2_pdgfra)"
-"0","data_summ_olig2_pdgfraneg <- summ_data_function(data.olig2.pdgfraneg, olig2_pdgfraneg)"
-"0",""
-"0","print(data_summ_olig2)"
