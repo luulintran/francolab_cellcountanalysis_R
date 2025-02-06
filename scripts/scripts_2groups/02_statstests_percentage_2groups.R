@@ -7,7 +7,7 @@ library(car)
 library(rlang)
 
 # LOAD OBJECTS FROM 02_statstests_2groups.R
-source("scripts/scripts_percentage_2groups/01_preprocess_data_2groups.R")
+source("scripts/scripts_2groups/01_preprocess_data_2groups.R")
 
 # 4. PERFORM STATS ANALYSIS: ---------------------------------------------------
 

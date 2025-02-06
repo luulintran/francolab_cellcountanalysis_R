@@ -1,0 +1,448 @@
+---
+title: "Franco Lab Cell Count Analysis Percentage 4 Groups"
+author: "Luuli N Tran"
+date: "2024-02-04"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(repos=c(CRAN="https://cran.rstudio.com"))
+install.packages(c("tidyr", "readr", "dplyr", "ggplot2", "kableExtra", 
+                   "car"), ask = FALSE)
+library(tidyr)
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(kableExtra)
+library(car)
+library(rlang)
+
+# set the root directory to the directory you are working in
+knitr::opts_knit$set(root.dir = "~/Desktop/cellcount_analysis_r/francolab_cellcountanalysis_R/")
+
+```
+# Introduction:  
+
+The purpose of this notebook is to provide a template for users to perform statistical analysis and visualization on cell counting data resulting from in utero electroporation. This notebook utilizes published data from the paper titled "Notch signaling plays a dual role in regulating the neuron-to-oligodendrocyte switch in the developing dorsal forebrain" (https://doi.org/10.1523/JNEUROSCI.0144-23.2023). 
+
+## How I cell count for in utero electroporation experiments:
+This might be different depending on the experiment. Generally, for E15.5-E18.5 electroporations, I image the entire electroporated area in the dorsal pallium. I then use photoshop to divide the image into the columns of the same size spanning the entire electroporated area. The size of the columns don't typically matter for counting electroporated cells, as in the end we will take the PERCENTAGE of electroporated cells that are positive for a marker. If you are counting the total number of cells per area, then it does matter what size the columns or boxes are.  
+
+I use image J's Cell Count Analysis feature to count cells, and I use an excel spreadsheet to keep track of cell counts. This excel sheet serves as a "map" of the cell counts over the images. The percent of electroporated (EP'd) cells that are marker positive are then added into a separate CSV file that will be used for statistical analysis and visualization using R.
+
+# Overview of this notebook:
+  1. Experiment information
+  2. Read in data
+  3. Organize and summarize data
+  4. Perform statistical analysis
+  5. Generate bar graphs
+
+
+# 1. Experiment information 
+## ASCL1, NICD+ASCL1, DNRBPJ+ASCL1 E15.5-18.5
+
+To understand whether Notch signaling is cooperateing with ASCL1 for OPC production, I electroporated ASCL1 alone, NICD+ASCL1, or DNRBPJ+ASCL1. NICD overactivates Notch, while DNRBPJ inhibits Notch. I only counted GFP+ cells, then I counted how many of those GFP+ cells are OLIG2+. Then I counted how many of those GFP+ OLIG2+ cells are OLIG2+ PDGFRA+. Finally, I divide the # of OLIG2+ and OLIG2+ PDGFRA+ cells by the # of GFP+ cells and multiply by 100 to give me the % of GFP+ cells that are marker+.  
+
+* In utero electroporation of pCIG, ASCL1, NICD, and DNRBPJ plasmids into CD1 mice at E15.5, analysis at E18.5.
+* IHC for Olig2 and Pdgfra OPC markers.
+* Counted % of GFP+ cells that are OLIG2+ and/or PDGFRA+
+* Note: I only counted PDGFRA+ cells for a subset of OLIG2+ cells. 
+
+# 2. Read in Olig2 Pdgfra cell counts csv file. 
+
+## CSV file info:  
+To make a csv file you can make it in Excel and then save it as CSV. It is best to keep this csv file containing your data "tidy", meaning there is a column for each variable, a row for each observation, and each value is stored in its own cell with no units. For more on "tidy" data, read more [here](https://r4ds.had.co.nz/tidy-data.html).  
+
+This csv file contains 5 columns, each one for a variable. And it has 10 rows, containing each observation for each "brain". 
+  1. treatment = construct/plasmid
+  2. brain_id = which brain (#1-5 brains for each treatment)
+  3. olig2, olig2_pdgfra, etc = % of GFP+ cells that are negative for the indicated markers
+  4. olig2_pdgfra = % of GFP+ OLIG2+ cells that are positive for PDGFRA.
+
+### Read in data
+```{r}
+# Here, we are reading in the csv file and saving it as an dataframe called 'data'. Make sure the path to your data is correct or there will be an error because you didn't give R the correct 'directions' to get to your file. 
+
+data <-
+  read.csv("data/4groups_data/2023-05-01_cd_e15-18_dnrbpj-ascl1-nicd_olig2_pdgfra.csv")
+
+```
+
+### Table containing data
+You can see what the data and the columns/rows look like in this scrollable table: 
+```{r}
+# show data in table
+data %>%
+  kbl(caption = "Sample Sheet") %>% 
+  kable_styling(bootstrap_options = "striped", full_width = F) %>%
+  scroll_box(height = "300px")
+```
+
+# 3. Organize and summarize the data
+You now have a dataframe containing your samples and the % of GFP+ cells that are positive for each marker, all in one place. However, we need to now separate this dataframe into a dataframe for each marker or combination of markers. This will make it easier for statistical analysis and graphing. Save them with different names. For the OLIG2+ PDGFRA+ dataframe, I will only keep the brain_id's that have olig2_pdgfra values and remove the ones that don't. These will appear as "NA", which I can omit. As a result, one dataframe (data.olig2) will have 16 observations, while the second dataframe (data.olig2.pdgfra) will have 12 observations.
+
+### Separate the dataframes
+Keeping the values for treatment, brain_id, and then whatever marker
+
+```{r}
+data.olig2 <- data %>%
+  select(treatment, brain_id, olig2)
+
+data.olig2.pdgfra <- data %>%
+  select(treatment, brain_id, olig2_pdgfra) %>%
+  na.omit()
+
+
+```
+
+### Summarize data. 
+
+Summarize the data (mean, standard deviation, n, standard error) using the dataframes created above as another dataframe for each marker combination. Store each measure as its own column as below:
+* mean_cells = mean
+* sd_cells = standard deviation
+* n_cells = n
+* SE_cells = standard error
+
+#### Note:
+Every time you do something repetitive like this, you could make a function that does all the steps for you and all you need to do is put in variables, like below. This makes code more organized and readable. 
+
+#### Define function for summarizing data
+```{r}
+summ_data_function <- function(data_df, marker_col) { # define the variables of the function, here the dataframe and the marker column
+  data_summ_df <- data_df %>% # make a new dataframe containing the summarized data
+    group_by(treatment) %>% # group by the treatment variable, so pcig and dnrbpj are the groups
+    summarise(
+      mean_cells = mean( {{marker_col}} ), # calculate the mean for each group
+      sd_cells = sd( {{marker_col}} ), # calculate the standard deviation
+      n_cells = n(), # the number of samples per group
+      SE_cells = sd( {{marker_col}}) /sqrt(n())  # calculate the standard error for each group
+    ) %>%
+    ungroup()
+
+  return(data_summ_df) # return the summarized data as a dataframe
+}
+
+```
+
+```{r}
+# Call function and save each marker as its own dataframe 
+data_summ_olig2 <- summ_data_function(data.olig2, olig2)
+data_summ_olig2_pdgfra <- summ_data_function(data.olig2.pdgfra, olig2_pdgfra)
+
+print(data_summ_olig2)
+print(data_summ_olig2_pdgfra)
+```
+
+# 4. Perform statistical analysis
+
+Proper statistical analysis requires assessing both the normality and variance of the data to determine the most appropriate statistical test for comparing groups. Since we will be performing tests that compare two groups, I have created a function that systematically runs each test (normality, variance, and significance) and stores the results in an accessible object for easy reference, including which test was used for comparison.
+
+### Define stats test function
+
+```{r}
+stats_test_4_groups <- function(data, variable) {
+  # Ensure the variable exists and is numeric
+  if (!variable %in% names(data)) {
+    stop("The specified variable does not exist in the dataframe.")
+  }
+  
+  variable_data <- data[[variable]]
+  if (!is.numeric(variable_data)) {
+    stop("The specified variable is not numeric.")
+  }
+
+  # Split the data by treatment groups. Change names as needed
+  group1_data <- variable_data[data$treatment == "pcig"]
+  group2_data <- variable_data[data$treatment == "ascl1"]
+  group3_data <- variable_data[data$treatment == "nicd_ascl1"]
+  group4_data <- variable_data[data$treatment == "dnrbpj_ascl1"]
+
+  # Validate the groups
+  if (any(length(group1_data) == 0, length(group2_data) == 0, 
+          length(group3_data) == 0, (length(group4_data) == 0))) {
+    stop("No data found for one or more groups.")
+  }
+
+  # Test for normality (Shapiro-Wilk test)
+  shapiro_results <- list(
+    PCIG = shapiro.test(group1_data), #change names as needed
+    ASCL1 = shapiro.test(group2_data),
+    NICD_ASCL1 = shapiro.test(group3_data),
+    DNRBPJ_ASCL1 = shapiro.test(group4_data)
+  )
+
+  # Print normality test results
+  for (group in names(shapiro_results)) {
+    cat(paste("Shapiro test for", group, ": p-value =", shapiro_results[[group]]$p.value, "\n"))
+  }
+
+  # Test for equal variances (Levene's test)
+  levene_test <- leveneTest(variable_data ~ data$treatment)
+
+  # Print Levene's test result
+  cat(paste("Levene's test p-value =", levene_test$`Pr(>F)`[1], "\n"))
+
+  # Determine the appropriate test
+  all_normal <- all(sapply(shapiro_results, function(res) res$p.value > 0.05))
+  equal_variances <- levene_test$`Pr(>F)`[1] > 0.05
+
+  if (all_normal) {
+    if (equal_variances) {
+      test_result <- aov(variable_data ~ data$treatment)  # One-way ANOVA
+      test_used <- "One-way ANOVA"
+    } else {
+      test_result <- oneway.test(variable_data ~ data$treatment, var.equal = FALSE)  # Welch ANOVA
+      test_used <- "Welch ANOVA"
+    }
+  } else {
+    test_result <- kruskal.test(variable_data ~ data$treatment)  # Kruskal-Wallis test
+    test_used <- "Kruskal-Wallis test"
+  }
+
+  # Return results as a list
+  stats_test_result <- list(
+    Normality_Results = shapiro_results,
+    Variance_Result = levene_test,
+    Test_Used = test_used,
+    Test_Result = test_result
+  )
+
+  # Print results
+  cat(paste("Test used:", test_used, "\n"))
+  print(summary(test_result))
+
+  return(stats_test_result)
+}
+
+```
+
+### Perform stats tests by calling function
+```{r}
+olig2_test_results <- stats_test_4_groups(data.olig2, "olig2")
+olig2_pdgfra_test_results <- stats_test_4_groups(data.olig2.pdgfra, "olig2_pdgfra")
+
+```
+You can look at the contents of the 'olig2_test_results', which tells us that the data for CTRL (pcig) and MUTANT (dnrbpj) are normally distributed (Shapiro Wilk p > 0.05) and have equal variance (Levene's test p > 0.05). Therefore, the function performed a Student's t-test.
+
+```{r}
+print(olig2_test_results)
+```
+
+## Post hoc Tukey's test
+
+For both datasets, the function used One-way ANOVA. We can perform post hoc Tukey's tests to get pairwise comparisons. In the Tukey Results you can access the p-values for pairwise comparisons as well as the p-value for one-way ANOVA, which I will use to display on the barplot later.
+
+### Define function for performing post hoc tukey's test
+
+```{r}
+posthoc_tukey_test <- function(marker_col, data_df) {
+  
+  # Remove rows with NA values in either 'marker_col' or 'treatment' columns
+  data_clean <- na.omit(data_df[, c(marker_col, "treatment")])
+  
+  # one-way ANOVA
+  model <- aov(as.formula(paste(marker_col, "~ treatment")), data = data_clean)
+  
+  # Make ANOVA model
+  summary_posthoc <- summary(model)
+  
+  # Extract ANOVA p-value from model above
+  anova_p_value <- summary_posthoc[[1]]$`Pr(>F)`[1] 
+  
+  # Perform Tukey HSD test for pairwise comparisons
+  tukey_results <- TukeyHSD(model, conf.level = 0.95)
+  
+  # Extract p-values from Tukey results
+  p_values <- tukey_results$treatment[,"p adj"]
+  
+  # Format p-values in scientific notation
+  formatted_p_values <- format(p_values, scientific = TRUE)
+  
+  # Return significant p-values with 10 digits precision
+  significant_p_values <- signif(p_values, digits = 10)
+  
+  # Plot Tukey HSD results
+  plot(tukey_results, las = 2)
+  
+  # Return p-values and summary of Tukey HSD in a list
+  return(list("Tukey_P_Values" = significant_p_values, "Tukey_Summary" = tukey_results, "ANOVA_pvalue" = anova_p_value))
+}
+
+```
+
+### Call function to perform post hoc tukey's test
+```{r}
+olig2_posthoctukey_results <- posthoc_tukey_test("olig2", data.olig2)
+
+# Access the p-values
+print(olig2_posthoctukey_results$Tukey_P_Values)
+
+# Access the summary of Tukey HSD results
+print(olig2_posthoctukey_results$Tukey_Summary)
+
+print(olig2_posthoctukey_results$ANOVA_pvalue)
+```
+```{r}
+olig2_pdgfra_posthoctukey_results <- posthoc_tukey_test("olig2_pdgfra", data.olig2.pdgfra)
+
+# Access the p-values
+print(olig2_pdgfra_posthoctukey_results$Tukey_P_Values)
+
+# Access the summary of Tukey HSD results
+print(olig2_pdgfra_posthoctukey_results$Tukey_Summary)
+
+print(olig2_pdgfra_posthoctukey_results$ANOVA_pvalue)
+```
+# 5. Generate bar graphs
+
+Now we would like to visualize the data by graphing them. I prefer graphing cell count data as bar graphs with dots representing each data point overlaid, as well as error bars. But the fun thing about R's ggplot2 package is you can make many different kinds a bar graphs. ggpalot's layering affect makes these graphs easily customizable. Read more about the ggplot2 package and the types of graphs you can make [here](https://ggplot2.tidyverse.org/articles/ggplot2.html).  
+
+We will make bar graphs which will compare the % of GFP+ cells (y axis) across treatments (pcig vs dnrbpj) (x axis).
+
+I will layer the plot like this:    
+  * geom_col() showing the mean for each treatment,
+  * geom_errorbar() showing the difference between the mean and standard error in positive and negative directions,
+  * geom_dotplot() showing each individual value of each treatment.  
+  * I also like to put the stats test result and the test used on the graph, which you can remove later.
+
+You can change the colors of the lines/fill/dots in the graph in R as well. Often times, I will set default colors for graphs in R, but I will save the graph as a PDF file and I can further edit the colors to my liking in Adobe Illustrator. 
+
+Since we are making 3 graphs, which can be repetitive, I will define a function that I can use over and over again.
+
+### Define function for plotting bar graph
+
+```{r}
+# This function allows us to replace the dataframe containing the marker cell counts, and the title. Be sure to add the stats info. See example in ### Call function
+create_barplot_4_groups <- function(data_summ, 
+                                    data_marker, 
+                                    treatment_col = "treatment", 
+                                    marker_col = "marker", 
+                                    title = "Title", 
+                                    positions = c("pcig", "ascl1", "nicd_ascl1", "dnrbpj_ascl1"), 
+                                    test_used, 
+                                    p_value, 
+                                    fill_colors = c('#bcbcbc', '#f4bfbd', '#e590a0', '#c4586f'),
+                                    dotsize_value,
+                                    binwidth_value) {
+  
+  # Function to format y-axis
+  scaleFUN <- function(x) sprintf("%.1f", x) 
+  
+  # Calculate max value of the marker column for consistent y-axis scaling
+  max_marker_value <- max(data_marker[[marker_col]], na.rm = TRUE) + 5
+  
+  # Creating the plot
+  barplot <- ggplot(data_summ, 
+                    aes(x = !!sym(treatment_col), 
+                        y = mean_cells)) + 
+    geom_col(width = 0.5, 
+             aes(fill = !!sym(treatment_col)), 
+             color = 'black', 
+             size = 0.25) + 
+    geom_errorbar(aes(ymin = mean_cells - SE_cells, 
+                      ymax = mean_cells + SE_cells), 
+                  width = 0.3, 
+                  size = 0.25) + 
+    geom_dotplot(data = data_marker, 
+                 aes(x = !!sym(treatment_col), 
+                     y = !!sym(marker_col), 
+                     fill = !!sym(treatment_col)), 
+                 binaxis = 'y', 
+                 stackdir = 'center', 
+                 dotsize = dotsize_value, 
+                 binwidth = binwidth_value,
+                 show.legend = FALSE) + 
+    theme_classic(base_size = 10) + 
+    ylab("% of EP'd cells") + 
+    scale_x_discrete(limits = positions) + 
+    theme(
+          panel.background = element_blank(),
+          panel.grid = element_blank(),
+          axis.line = element_line(size = 0.25, 
+                                   color = rgb(0, 0, 0, max = 255)), 
+          axis.text.x = element_text(colour = 'black', angle = 45, hjust = 1), 
+          axis.text.y = element_text(hjust = 1, colour = 'black'), 
+          axis.title.x = element_blank(), 
+          aspect.ratio = 2 / 1, 
+          legend.key.size = unit(0.7, "line"), 
+          text = element_text(size = 10), 
+          plot.title = element_text(size = 10)) + 
+    scale_y_continuous(expand = c(0, 0), labels = scaleFUN, limits= c(0,max_marker_value)) + 
+    scale_fill_manual(values = fill_colors, 
+                      name = "", 
+                      labels = positions) + 
+    ggtitle(title) + 
+    theme(legend.position = "none") + 
+    annotate("text", x = 2.5, y = max(data_marker[[marker_col]]) + 2, 
+             label = paste(test_used, "\n", format(p_value, digits = 3)), 
+             size = 3, hjust = 0.5)
+  
+  return(barplot)
+}
+
+```
+
+### Call function to generate bar graphs
+
+### OLIG2+
+```{r}
+
+olig2_barplot_4groups <- create_barplot_4_groups (
+  data_summ_olig2, 
+  data.olig2, 
+  treatment_col = "treatment", 
+  marker_col = "olig2", 
+  title = "% OLIG2+ Cells", 
+  positions = c("pcig", "ascl1", "nicd_ascl1", "dnrbpj_ascl1"), 
+  test_used = olig2_test_results$Test_Used,
+  p_value = olig2_posthoctukey_results$ANOVA_pvalue,
+  fill_colors = c('#bcbcbc', '#f4bfbd', '#e590a0', '#c4586f'),
+  dotsize_value = 0.7,
+  binwidth_value = 0.7)
+
+# Display the plot
+print(olig2_barplot_4groups)
+
+
+```
+
+#### Save the plot as a PDF file
+Remove the '#' to run the code. I had to add '#' to make the markdown file
+```{r}
+#filename = "results/4groups_results/ascl1-nicd-dnrbpj_olig2_barplot.pdf"
+#pdf(filename, width = 5, height = 5)
+#print(olig2_barplot_4groups)
+
+#dev.off()
+
+```
+
+### OLIG2+ PDGFRA+
+```{r}
+olig2_pdgfra_barplot_4groups <- create_barplot_4_groups (
+  data_summ_olig2_pdgfra, 
+  data.olig2.pdgfra, 
+  treatment_col = "treatment", 
+  marker_col = "olig2_pdgfra", 
+  title = "% OLIG2+ PDGFRA+ Cells", 
+  positions = c("pcig", "ascl1", "nicd_ascl1", "dnrbpj_ascl1"), 
+  test_used = olig2_pdgfra_test_results$Test_Used,
+  p_value = olig2_pdgfra_posthoctukey_results$ANOVA_pvalue,
+  fill_colors = c('#bcbcbc', '#f4bfbd', '#e590a0', '#c4586f'),
+  dotsize_value = 0.3,
+  binwidth_value = 0.7)
+
+# Display the plot
+print(olig2_pdgfra_barplot_4groups)
+```
+
+#### Save the plot as a PDF file
+```{r}
+#filename = "results/4groups_results/ascl1-nicd-dnrbpj_olig2_pdgfra_barplot.pdf"
+#pdf(filename, width = 5, height = 5)
+#print(olig2_pdgfra_barplot_4groups)
+
+#ev.off()
+
+```

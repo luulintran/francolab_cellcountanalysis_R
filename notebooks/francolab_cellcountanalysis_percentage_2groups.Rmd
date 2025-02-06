@@ -1,5 +1,5 @@
 ---
-title: "Franco Lab Cell Count Analysis Percentage"
+title: "Franco Lab Cell Count Analysis Percentage 2 Groups"
 author: "Luuli N Tran"
 date: "2024-02-04"
 output: html_document
@@ -27,7 +27,9 @@ knitr::opts_knit$set(root.dir = "~/Desktop/cellcount_analysis_r/francolab_cellco
 The purpose of this notebook is to provide a template for users to perform statistical analysis and visualization on cell counting data resulting from in utero electroporation. This notebook utilizes published data from the paper titled "Notch signaling plays a dual role in regulating the neuron-to-oligodendrocyte switch in the developing dorsal forebrain" (https://doi.org/10.1523/JNEUROSCI.0144-23.2023). 
 
 ## How I cell count for in utero electroporation experiments:
-This might be different depending on the experiment. Generally, for E15.5-E18.5 electroporations, I image the entire electroporated area in the dorsal pallium. I then use photoshop to divide the image into the columns of the same size spanning the entire electroporated area. The size of the columns don't typically matter for counting electroporated cells, as in the end we will take the PERCENTAGE of electroporated cells that are positive for a marker. If you are counting the total number of cells per area, then it does matter what size the columns or boxes are. I use image J's Cell Count Analysis feature to count cells, and I use an excel spreadsheet to keep track of cell counts. This excel sheet serves as a "map" of the cell counts over the images. The percent of electroporated (EP'd) cells that are marker positive are then added into a separate CSV file that will be used for statistical analysis and visualization using R.
+This might be different depending on the experiment. Generally, for E15.5-E18.5 electroporations, I image the entire electroporated area in the dorsal pallium. I then use photoshop to divide the image into the columns of the same size spanning the entire electroporated area. The size of the columns don't typically matter for counting electroporated cells, as in the end we will take the PERCENTAGE of electroporated cells that are positive for a marker. If you are counting the total number of cells per area, then it does matter what size the columns or boxes are.  
+
+I use image J's Cell Count Analysis feature to count cells, and I use an excel spreadsheet to keep track of cell counts. This excel sheet serves as a "map" of the cell counts over the images. The percent of electroporated (EP'd) cells that are marker positive are then added into a separate CSV file that will be used for statistical analysis and visualization using R.
 
 # Overview of this notebook:
   1. Experiment information
@@ -64,7 +66,7 @@ This csv file contains 5 columns, each one for a variable. And it has 10 rows, c
 # Here, we are reading in the csv file and saving it as an dataframe called 'data'. Make sure the path to your data is correct or there will be an error because you didn't give R the correct 'directions' to get to your file. 
 
 data <-
-  read.csv("data/percentage_data/2021-05-06_cd1_e15-18_dnrbpj_olig2_pdgfra.csv")
+  read.csv("data/2groups_data/2021-05-06_cd1_e15-18_dnrbpj_olig2_pdgfra.csv")
 
 ```
 
@@ -217,7 +219,7 @@ This function can be changed to best fit your preference or the experiment. For 
 
 # 5. Generate bar graphs
 
-Now we would like to visualize the data by graphing them. I prefer graphing cell count data as bar graphs with dots representing each data point overlaid, as well as error bars. But the fun thing about R's ggplot2 package is you can make many different kinds a bar graphs. ggpalot's layering affect makes these graphs easily customizable. I also like to put the stats test result and the test used on the graph, which you can remove later
+Now we would like to visualize the data by graphing them. I prefer graphing cell count data as bar graphs with dots representing each data point overlaid, as well as error bars. But the fun thing about R's ggplot2 package is you can make many different kinds a bar graphs. ggpalot's layering affect makes these graphs easily customizable. Read more about the ggplot2 package and the types of graphs you can make [here](https://ggplot2.tidyverse.org/articles/ggplot2.html).  
 
 We will make bar graphs which will compare the % of GFP+ cells (y axis) across treatments (pcig vs dnrbpj) (x axis).
 
@@ -225,6 +227,7 @@ I will layer the plot like this:
   * geom_col() showing the mean for each treatment,
   * geom_errorbar() showing the difference between the mean and standard error in positive and negative directions,
   * geom_dotplot() showing each individual value of each treatment.  
+  * I also like to put the stats test result and the test used on the graph, which you can remove later.
 
 You can change the colors of the lines/fill/dots in the graph in R as well. Often times, I will set default colors for graphs in R, but I will save the graph as a PDF file and I can further edit the colors to my liking in Adobe Illustrator. 
 
@@ -313,7 +316,7 @@ print(olig2_barplot)
 #### Save the plot as a PDF file
 Remove the '#' to run the code. I had to add '#' to make the markdown file
 ```{r}
-#filename = "results/percentage_results/dnrbpj_olig2_barplot.pdf"
+#filename = "results/2groups_results/dnrbpj_olig2_barplot.pdf"
 #pdf(filename, width = 5, height = 5)
 #print(olig2_barplot)
 
@@ -337,7 +340,7 @@ print(olig2_pdgfra_barplot)
 
 #### Save the plot as a PDF file
 ```{r}
-#filename = "results/percentage_results/dnrbpj_olig2_pdgfra_barplot.pdf"
+#filename = "results/2groups_results/dnrbpj_olig2_pdgfra_barplot.pdf"
 #pdf(filename, width = 5, height = 5)
 #print(olig2_pdgfra_barplot)
 
@@ -362,7 +365,7 @@ print(olig2_pdgfraneg_barplot)
 
 #### Save the plot as a PDF file
 ```{r}
-#filename = "results/percentage_results/dnrbpj_olig2_pdgfraneg_barplot.pdf"
+#filename = "results/2groups_results/dnrbpj_olig2_pdgfraneg_barplot.pdf"
 #pdf(filename, width = 5, height = 5)
 #print(olig2_pdgfraneg_barplot)
 

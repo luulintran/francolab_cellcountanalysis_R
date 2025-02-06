@@ -10,7 +10,7 @@ library(rlang)
 
 # Read in as dataframe and save as object
 data <-
-  read.csv("data/percentage_data/2021-05-06_cd1_e15-18_dnrbpj_olig2_pdgfra.csv")
+  read.csv("data/2groups_data/2021-05-06_cd1_e15-18_dnrbpj_olig2_pdgfra.csv")
 
 # 2. ORGANIZE AND SUMMARIZE DATA: ----------------------------------------------
 
