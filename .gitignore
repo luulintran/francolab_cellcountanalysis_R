@@ -1,5 +1,7 @@
 # Ignore R temporary files
 *.RData
 *.Rproj
+.Rhistory
+*.DS_Store
 scripts/.Rapp.history
 .Rproj.user/
