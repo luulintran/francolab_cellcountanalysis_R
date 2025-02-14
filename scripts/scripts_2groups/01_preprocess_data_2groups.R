@@ -12,58 +12,52 @@ library(rlang)
 data <-
   read.csv("data/2groups_data/2021-05-06_cd1_e15-18_dnrbpj_olig2_pdgfra.csv")
 
-# 2. ORGANIZE AND SUMMARIZE DATA: ----------------------------------------------
+# 2. DEFINE MARKERS AND TREATMENT GROUPS: --------------------------------------
 
-# Separate dataframes
-data.olig2 <- data %>%
-  select(treatment, brain_id, olig2)
+# Define markers
+# Change as needed based on your column names!
+markers <- c("olig2", "olig2_pdgfra", "olig2_pdgfraneg")
 
-data.olig2.pdgfra <- data %>%
-  select(treatment, brain_id, olig2_pdgfra)
 
-data.olig2.pdgfraneg <- data %>%
-  select(treatment, brain_id, olig2_pdgfraneg)
+# Define control and mutant groups
+# Change as needed based on "treatments"!
+control_group <- "pcig"     
+mutant_group <- "dnrbpj"    
+
+# 3. ORGANIZE AND SUMMARIZE DATA: ----------------------------------------------
 
 # Define function for summarizing data *****************************************
 
-# define the variables of the function, here the dataframe and the marker column
 summ_data_function <- function(data_df, marker_col) { 
-  # make a new dataframe containing the summarized data
   data_summ_df <- data_df %>% 
-    # group by the treatment variable, so pcig and dnrbpj are the groups
     group_by(treatment) %>% 
     summarise(
-      # calculate the mean for each group
-      mean_cells = mean( {{marker_col}} ), 
-      # calculate the standard deviation
-      sd_cells = sd( {{marker_col}} ), 
-      # the number of samples per group
+      mean_cells = mean(.data[[marker_col]]), 
+      sd_cells = sd(.data[[marker_col]]), 
       n_cells = n(), 
-      # calculate the standard error for each group
-      SE_cells = sd( {{marker_col}}) /sqrt(n())  
+      SE_cells = sd(.data[[marker_col]]) / sqrt(n())  
     ) %>%
     ungroup()
   
-  # return the summarized data as a dataframe
   return(data_summ_df) 
 }
 # ******************************************************************************
 
-# Call function and save each marker as its own dataframe 
-data_summ_olig2 <- summ_data_function(
-  data.olig2, 
-  olig2)
+# Initiate a list for the summarized_data
+summarized_data <- list()
 
-data_summ_olig2_pdgfra <- summ_data_function(
-  data.olig2.pdgfra, 
-  olig2_pdgfra)
-
-data_summ_olig2_pdgfraneg <- summ_data_function(
-  data.olig2.pdgfraneg, 
-  olig2_pdgfraneg)
-
-print(data_summ_olig2)
-print(data_summ_olig2_pdgfra)
-print(data_summ_olig2_pdgfraneg)
-
-print("Data has been preprocessed")
+# Iterate through each "marker" in the vector markers defined earlier
+for (marker in markers) {
+  # Select specific columns from the original data dataframe
+  # and store it in a new dataframe for each marker
+  data_marker <- data %>%
+    select(treatment, brain_id, all_of(marker))
+  
+  # Call summ_data_function to summarize data,
+  # and store results in the summarized_data list we initiated earlier
+  summarized_data[[marker]] <- summ_data_function(data_marker, marker)
+  
+  # Print summarized data for each marker in its own dataframe
+  print(summarized_data[[marker]])
+  print(paste("Data for", marker, "has been processed."))
+}

@@ -7,126 +7,118 @@ library(car)
 library(rlang)
 
 # LOAD OBJECTS FROM 02_statstests_2groups.R
-source("scripts/scripts_4groups/02_statstests_percentage_4groups.R")
+source("scripts/scripts_2groups/02_statstests_percentage_2groups.R")
 
-# 5. GENERATE BAR PLOTS: -------------------------------------------------------
+# Define custom colors for treatment groups
+custom_colors <- c(pcig = "#bcbcbc", dnrbpj = "#c4586f")
 
-# Define function for making barplots: *****************************************
-create_barplot_4_groups <- function(data_summ, 
-                                    data_marker, 
-                                    treatment_col = "treatment", 
-                                    marker_col = "marker", 
-                                    title = "Title", 
-                                    positions = c("pcig", "ascl1", "nicd_ascl1", "dnrbpj_ascl1"), 
-                                    test_used, 
-                                    p_value, 
-                                    fill_colors = c('#bcbcbc', '#f4bfbd', '#e590a0', '#c4586f'),
-                                    dotsize_value,
-                                    binwidth_value) {
+# 6. GENERATE BAR PLOTS: -------------------------------------------------------
+
+# Function to create a bar plot
+create_barplot <- function(data_summ, 
+                           data_marker, 
+                           treatment_col = "treatment",
+                           marker_col, 
+                           title, 
+                           test_used, 
+                           p_value, 
+                           colors) {  
   
-  # Function to format y-axis
-  scaleFUN <- function(x) sprintf("%.1f", x) 
+  scaleFUN <- function(x) sprintf("%.1f", x)  # Format y-axis labels to one decimal point
   
-  # Calculate max value of the marker column for consistent y-axis scaling
-  max_marker_value <- max(data_marker[[marker_col]], na.rm = TRUE) + 5
+  # Make the order of treatments control_group then mutant-group 
+  data_summ[[treatment_col]] <- factor(data_summ[[treatment_col]], 
+                                       levels = c(control_group, mutant_group))
+  data_marker[[treatment_col]] <- factor(data_marker[[treatment_col]], 
+                                         levels = c(control_group, mutant_group))
   
-  # Creating the plot
+  # Create the plot
   barplot <- ggplot(data_summ, 
                     aes(x = !!sym(treatment_col), 
                         y = mean_cells)) + 
     geom_col(width = 0.5, 
              aes(fill = !!sym(treatment_col)), 
              color = 'black', 
-             size = 0.25) + 
+             size = 0.5) + 
     geom_errorbar(aes(ymin = mean_cells - SE_cells, 
                       ymax = mean_cells + SE_cells), 
                   width = 0.3, 
-                  size = 0.25) + 
+                  size = 0.5) + 
     geom_dotplot(data = data_marker, 
                  aes(x = !!sym(treatment_col), 
                      y = !!sym(marker_col), 
                      fill = !!sym(treatment_col)), 
                  binaxis = 'y', 
                  stackdir = 'center', 
-                 dotsize = dotsize_value, 
-                 binwidth = binwidth_value,
+                 dotsize = 0.8, 
                  show.legend = FALSE) + 
-    theme_classic(base_size = 10) + 
-    ylab("% of EP'd cells") + 
-    scale_x_discrete(limits = positions) + 
+    theme_classic(base_size = 12) + 
+    ylab("% of GFP+ cells") + 
+    scale_x_discrete(limits = c(control_group, mutant_group)) +
     theme(
       panel.background = element_blank(),
-      panel.grid = element_blank(),
-      axis.line = element_line(size = 0.25, 
-                               color = rgb(0, 0, 0, max = 255)), 
+      plot.background = element_blank(),
+      axis.line = element_line(size = 0.5, color = "black"), 
       axis.text.x = element_text(colour = 'black', angle = 45, hjust = 1), 
       axis.text.y = element_text(hjust = 1, colour = 'black'), 
       axis.title.x = element_blank(), 
       aspect.ratio = 2 / 1, 
       legend.key.size = unit(0.7, "line"), 
-      text = element_text(size = 10), 
-      plot.title = element_text(size = 10)) + 
-    scale_y_continuous(expand = c(0, 0), labels = scaleFUN, limits= c(0,max_marker_value)) + 
-    scale_fill_manual(values = fill_colors, 
-                      name = "", 
-                      labels = positions) + 
+      text = element_text(size = 14), 
+      plot.title = element_text(size = 14)) + 
+    scale_y_continuous(expand = c(0, 0), labels = scaleFUN) + 
+    scale_fill_manual(values = colors) +  # Use custom colors defined earlier
     ggtitle(title) + 
     theme(legend.position = "none") + 
-    annotate("text", x = 2.5, y = max(data_marker[[marker_col]]) + 2, 
-             label = paste(test_used, "\n", format(p_value, digits = 3)), 
-             size = 3, hjust = 0.5)
+    annotate("text", x = 1.5, y = max(data_summ$mean_cells, na.rm = TRUE) + 0.5, 
+             label = paste(test_used, "\np-value =", format(p_value, digits = 3)), 
+             size = 2, hjust = 0.5)
   
   return(barplot)
 }
 
 # ******************************************************************************
 
-# Call function to generate bar plots and save as PDF
 
-# OLIG2+ ***********************************************************************
-olig2_barplot_4groups <- create_barplot_4_groups (
-  data_summ_olig2, 
-  data.olig2, 
-  treatment_col = "treatment", 
-  marker_col = "olig2", 
-  title = "% OLIG2+ Cells", 
-  positions = c("pcig", "ascl1", "nicd_ascl1", "dnrbpj_ascl1"), 
-  test_used = olig2_test_results$Test_Used,
-  p_value = olig2_posthoctukey_results$ANOVA_pvalue,
-  fill_colors = c('#bcbcbc', '#f4bfbd', '#e590a0', '#c4586f'),
-  dotsize_value = 0.7,
-  binwidth_value = 0.7)
-
-
-# set up filename and save
-filename = "results/4groups_results/ascl1-nicd-dnrbpj_olig2_barplot.pdf"
-pdf(filename, width = 5, height = 5)
-print(olig2_barplot_4groups)
-
-dev.off()
-
-print("OLIG2+ barplot generated and saved")
-
-# OLIG2+ PDGFRA+ ***************************************************************
-olig2_pdgfra_barplot_4groups <- create_barplot_4_groups (
-  data_summ_olig2_pdgfra, 
-  data.olig2.pdgfra, 
-  treatment_col = "treatment", 
-  marker_col = "olig2_pdgfra", 
-  title = "% OLIG2+ PDGFRA+ Cells", 
-  positions = c("pcig", "ascl1", "nicd_ascl1", "dnrbpj_ascl1"), 
-  test_used = olig2_pdgfra_test_results$Test_Used,
-  p_value = olig2_pdgfra_posthoctukey_results$ANOVA_pvalue,
-  fill_colors = c('#bcbcbc', '#f4bfbd', '#e590a0', '#c4586f'),
-  dotsize_value = 0.3,
-  binwidth_value = 0.7)
-
-# set up filename and save
-filename = "results/4groups_results/ascl1-nicd-dnrbpj_olig2_pdgfra_barplot.pdf"
-pdf(filename, width = 5, height = 5)
-print(olig2_pdgfra_barplot_4groups)
-
-dev.off()
-
-print("OLIG2+ PDGFRA+ barplot generated and saved")
-
+# Iterate through each marker and generate plots
+for (marker in markers) {
+  
+  # Extract marker cell count data
+  data_marker <- data %>%
+    select(treatment, brain_id, all_of(marker))
+  
+  # Extract summarized data
+  data_summ <- summarized_data[[marker]]
+  
+  # define order of treatments on barplot
+  data_summ$treatment <- factor(data_summ$treatment, 
+                                levels = c(control_group, mutant_group))
+  data_marker$treatment <- factor(data_marker$treatment, 
+                                  levels = c(control_group, mutant_group))
+  
+  # Extract stats test results
+  test_results <- stats_results[[marker]]
+  p_value <- test_results$Test_Result$p.value
+  
+  # Generate the barplot with function made earlier
+  barplot <- create_barplot(
+    data_summ = data_summ, 
+    data_marker = data_marker, 
+    marker_col = marker, 
+    title = paste0("% ", toupper(marker), "+ cells"), 
+    test_used = test_results$Test_Used, 
+    p_value = p_value,
+    colors = custom_colors # based on the custome_colors defined earlier
+  )
+  
+  # Print barplots
+  print(barplot)
+  
+  # Save barplots as pdf
+  ggsave(filename = paste0("results/2groups_results/", marker, "_barplot.pdf"), 
+         plot = barplot, 
+         width = 5, 
+         height = 5) # can change the width and height as needed
+  
+  print(paste(marker, "barplot generated and saved in results/"))
+}
