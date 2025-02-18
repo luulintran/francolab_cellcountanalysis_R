@@ -6,8 +6,6 @@ library(ggplot2)
 library(car)
 library(rlang)
 
-# LOAD OBJECTS FROM 02_statstests_2groups.R
-source("scripts/scripts_2groups/01_preprocess_data_2groups.R")
 
 # 4. PERFORM STATS ANALYSIS: ---------------------------------------------------
 
@@ -70,8 +68,13 @@ stats_test <- function(data_df, marker_col, control_group, mutant_group) {
 }
 
 # ******************************************************************************
+# Here, we will create an output .txt file to store the stats results for each marker.
 
-# Perform statistical tests
+# Define output file
+stats_output_file <- file.path(output_dir_tables, "stats_results.txt")
+
+# Open connection to write stats results in the output
+sink(stats_output_file)
 
 # Initiate a list to store the stats_results
 stats_results <- list()
@@ -84,5 +87,14 @@ for (marker in markers) {
                                         control_group, 
                                         mutant_group)
   
-  print(paste("Stats results for", marker, "has been processed."))
+  # print message and results to .txt file
+  cat(paste("\nStats results for", marker, ":\n"))
+  print(stats_results[[marker]])
 }
+
+# close connection to .txt file
+sink()
+
+
+# print message to let us know the script ran successfully
+print("Stats tests were performed successfully and saved in results/tables/")

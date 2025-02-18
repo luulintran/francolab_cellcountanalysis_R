@@ -1,0 +1,144 @@
+Shapiro test for pcig p-value: 0.900486121639419 
+Shapiro test for ascl1 p-value: 0.376636803416703 
+Shapiro test for nicd_ascl1 p-value: 0.0840818768024103 
+Shapiro test for dnrbpj_ascl1 p-value: 0.0737640173215961 
+Levene test p-value: 0.516061577454264 
+Test used: One-way ANOVA 
+                  Df Sum Sq Mean Sq F value  Pr(>F)    
+data_df$treatment  3  780.8  260.28   34.91 3.3e-06 ***
+Residuals         12   89.5    7.45                    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Stats results for olig2 :
+$Normality_Results
+$Normality_Results$pcig
+
+	Shapiro-Wilk normality test
+
+data:  X[[i]]
+W = 0.97404, p-value = 0.9005
+
+
+$Normality_Results$ascl1
+
+	Shapiro-Wilk normality test
+
+data:  X[[i]]
+W = 0.88859, p-value = 0.3766
+
+
+$Normality_Results$nicd_ascl1
+
+	Shapiro-Wilk normality test
+
+data:  X[[i]]
+W = 0.78911, p-value = 0.08408
+
+
+$Normality_Results$dnrbpj_ascl1
+
+	Shapiro-Wilk normality test
+
+data:  X[[i]]
+W = 0.78267, p-value = 0.07376
+
+
+
+$Variance_Result
+Levene's Test for Homogeneity of Variance (center = median)
+      Df F value Pr(>F)
+group  3  0.8027 0.5161
+      12               
+
+$Test_Used
+[1] "One-way ANOVA"
+
+$Test_Result
+Call:
+   aov(formula = variable_data ~ data_df$treatment)
+
+Terms:
+                data_df$treatment Residuals
+Sum of Squares           780.8333   89.4561
+Deg. of Freedom                 3        12
+
+Residual standard error: 2.730326
+Estimated effects may be unbalanced
+
+$Group_Means
+[1]  5.319188 12.113972 21.210356  2.810846
+
+Shapiro test for pcig p-value: 0.179574889625704 
+Shapiro test for ascl1 p-value: 0.795405710559341 
+Shapiro test for nicd_ascl1 p-value: 0.637969904446393 
+Shapiro test for dnrbpj_ascl1 p-value: 0.495425044156153 
+Levene test p-value: 0.629346940679728 
+Test used: One-way ANOVA 
+                  Df Sum Sq Mean Sq F value   Pr(>F)    
+data_df$treatment  3  50.48   16.83   43.15 2.76e-05 ***
+Residuals          8   3.12    0.39                     
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+4 observations deleted due to missingness
+
+Stats results for olig2_pdgfra :
+$Normality_Results
+$Normality_Results$pcig
+
+	Shapiro-Wilk normality test
+
+data:  X[[i]]
+W = 0.82654, p-value = 0.1796
+
+
+$Normality_Results$ascl1
+
+	Shapiro-Wilk normality test
+
+data:  X[[i]]
+W = 0.98857, p-value = 0.7954
+
+
+$Normality_Results$nicd_ascl1
+
+	Shapiro-Wilk normality test
+
+data:  X[[i]]
+W = 0.9645, p-value = 0.638
+
+
+$Normality_Results$dnrbpj_ascl1
+
+	Shapiro-Wilk normality test
+
+data:  X[[i]]
+W = 0.93181, p-value = 0.4954
+
+
+
+$Variance_Result
+Levene's Test for Homogeneity of Variance (center = median)
+      Df F value Pr(>F)
+group  3  0.6062 0.6293
+       8               
+
+$Test_Used
+[1] "One-way ANOVA"
+
+$Test_Result
+Call:
+   aov(formula = variable_data ~ data_df$treatment)
+
+Terms:
+                data_df$treatment Residuals
+Sum of Squares           50.48108   3.11964
+Deg. of Freedom                 3         8
+
+Residual standard error: 0.6244638
+Estimated effects may be unbalanced
+4 observations deleted due to missingness
+
+$Group_Means
+[1] 2.143034 3.017580 6.625141 1.211358
+

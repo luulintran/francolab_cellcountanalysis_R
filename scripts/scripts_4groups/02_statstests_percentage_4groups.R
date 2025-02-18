@@ -6,8 +6,6 @@ library(ggplot2)
 library(car)
 library(rlang)
 
-# LOAD OBJECTS FROM 02_statstests_2groups.R
-source("scripts/scripts_4groups/01_preprocess_data_4groups.R")
 
 # 5. PERFORM STATS ANALYSIS: ---------------------------------------------------
 
@@ -79,8 +77,15 @@ stats_test_4_groups <- function(data_df, marker_col, control_group, mutant_group
   return(stats_test_result)
 }
 # ******************************************************************************
+# Here, we will create an output .txt file to store the stats results for each marker.
 
-# initiate a list to store stats results
+# Define output file
+stats_output_file <- file.path(output_dir_tables, "stats_results.txt")
+
+# Open connection to write stats results in the output
+sink(stats_output_file)
+
+# Initiate list
 stats_results <- list()
 
 # Iterate through each marker and call function to perform stats tests
@@ -89,8 +94,13 @@ for (marker in markers) {
                                                  marker, 
                                                  control_group, 
                                                  mutant_groups)
-  print(paste("Stats results for", marker, "has been processed."))
+  # print message and results to .txt file
+  cat(paste("\nStats results for", marker, ":\n"))
+  print(stats_results[[marker]])
 }
+
+# Close the sink connection after the 'for loop' above is done
+sink()
 
 # Define Post Hoc Tukey's test function: ***************************************
 posthoc_tukey_test <- function(data_df, marker_col, group_col) {
@@ -137,7 +147,17 @@ posthoc_tukey_test <- function(data_df, marker_col, group_col) {
 
 
 # ******************************************************************************
-# initiate list
+# Here, we will create an output .txt file to store the post hoc tukey results
+# for each marker
+
+# Define output file
+posthoctukey_output_file <- 
+  file.path(output_dir_tables, "posthoctukey_results.txt")
+
+# Open connection to write stats results in the output
+sink(posthoctukey_output_file)
+
+# Initate list
 posthoc_tukey_results <- list()
 
 # Iterate through markers vector
@@ -145,6 +165,14 @@ for (marker in markers) {
   posthoc_tukey_results[[marker]] <- posthoc_tukey_test(data,
                                                         marker, 
                                                         "treatment")
-  
-  print(paste("Posthoc Tukey results for", marker, "have been processed."))
+  # print message and post hoc results to .txt file
+  cat(paste("\nPost hoc tukey results for", marker, ":\n"))
+  print(posthoc_tukey_results[[marker]])
 }
+
+# close connection
+sink()
+
+# print message to let us know the script ran successfully
+print("Stats tests were performed successfully and saved in results/tables/")
+

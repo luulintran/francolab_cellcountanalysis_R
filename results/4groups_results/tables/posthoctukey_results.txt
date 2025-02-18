@@ -1,0 +1,54 @@
+
+Post hoc tukey results for olig2 :
+$ANOVA_p_value
+[1] 3.302903e-06
+
+$Tukey_P_Values
+     dnrbpj_ascl1-ascl1        nicd_ascl1-ascl1              pcig-ascl1 
+           3.738269e-03            2.450702e-03            1.370440e-02 
+nicd_ascl1-dnrbpj_ascl1       pcig-dnrbpj_ascl1         pcig-nicd_ascl1 
+           7.092221e-06            6.045052e-01            8.450806e-06 
+
+$Tukey_Summary
+  Tukey multiple comparisons of means
+    95% family-wise confidence level
+
+Fit: aov(formula = as.formula(paste(marker_col, "~", group_col)), data = data_clean)
+
+$treatment
+                              diff        lwr        upr     p adj
+dnrbpj_ascl1-ascl1       -9.303126 -15.494237  -3.112016 0.0037383
+nicd_ascl1-ascl1          9.096384   3.364529  14.828239 0.0024507
+pcig-ascl1               -6.794784 -12.232499  -1.357070 0.0137044
+nicd_ascl1-dnrbpj_ascl1  18.399510  12.208400  24.590621 0.0000071
+pcig-dnrbpj_ascl1         2.508342  -3.411492   8.428176 0.6045052
+pcig-nicd_ascl1         -15.891168 -21.328883 -10.453454 0.0000085
+
+
+
+Post hoc tukey results for olig2_pdgfra :
+$ANOVA_p_value
+[1] 2.757257e-05
+
+$Tukey_P_Values
+     dnrbpj_ascl1-ascl1        nicd_ascl1-ascl1              pcig-ascl1 
+           3.108599e-02            4.772838e-04            3.762067e-01 
+nicd_ascl1-dnrbpj_ascl1       pcig-dnrbpj_ascl1         pcig-nicd_ascl1 
+           2.529855e-05            3.285007e-01            1.020330e-04 
+
+$Tukey_Summary
+  Tukey multiple comparisons of means
+    95% family-wise confidence level
+
+Fit: aov(formula = as.formula(paste(marker_col, "~", group_col)), data = data_clean)
+
+$treatment
+                              diff        lwr        upr     p adj
+dnrbpj_ascl1-ascl1      -1.8062221 -3.4390135 -0.1734306 0.0310860
+nicd_ascl1-ascl1         3.6075608  1.9747693  5.2403523 0.0004773
+pcig-ascl1              -0.8745459 -2.5073373  0.7582456 0.3762067
+nicd_ascl1-dnrbpj_ascl1  5.4137829  3.7809914  7.0465744 0.0000253
+pcig-dnrbpj_ascl1        0.9316762 -0.7011153  2.5644677 0.3285007
+pcig-nicd_ascl1         -4.4821067 -6.1148981 -2.8493152 0.0001020
+
+

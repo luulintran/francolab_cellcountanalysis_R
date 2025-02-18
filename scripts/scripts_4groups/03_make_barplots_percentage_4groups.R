@@ -6,9 +6,6 @@ library(ggplot2)
 library(car)
 library(rlang)
 
-# LOAD OBJECTS FROM 02_statstests_2groups.R
-source("scripts/scripts_4groups/02_statstests_percentage_4groups.R")
-
 # 6. GENERATE BAR PLOTS: -------------------------------------------------------
 
 # define custom colors for each treatment group
@@ -134,10 +131,10 @@ for (marker in markers) {
   print(barplot)
   
   # Save barplots as PDF files
-  ggsave(filename = paste0("results/4groups_results/", marker, "_barplot.pdf"), 
+  ggsave(filename = file.path(output_dir_figures, paste0(marker, "_barplot.pdf")), 
          plot = barplot, 
          width = 5, 
          height = 5) # Adjust width and height as needed
   
-  print(paste(marker, "barplot generated and saved in results/"))
+  print(paste(marker, "barplot generated and saved in results/figures/"))
 }

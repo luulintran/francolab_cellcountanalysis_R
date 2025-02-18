@@ -67,11 +67,46 @@ The csv file for this specific analysis contains 5 columns, each one for a varia
   5. olig2_pdgfraneg = % of GFP+ OLIG2+ cells that are negative for PDGFRA.  
 
 #### Read in data
+First, we will input the data and variables in this code chunk. These defined variables will be applied to the rest of the code.  
+This should be the only code chunk you would change to run the rest of the code.
 ```{r}
-# Here, we are reading in the csv file and saving it as an dataframe called 'data'. Make sure the path to your data is correct or there will be an error because you didn't give R the correct 'directions' to get to your file. 
+# DEFINE FILES AND PATHS: ---------------------------------------------------
 
-data <-
-  read.csv("data/2groups_data/2021-05-06_cd1_e15-18_dnrbpj_olig2_pdgfra.csv")
+# Make sure the path to your data is correct or there will be an error because you didn't give R the correct 'directions' to get to your file. 
+
+# this is your cell count sample sheet
+input_file <- "data/2groups_data/2021-05-06_cd1_e15-18_dnrbpj_olig2_pdgfra.csv"
+
+# this is the output directory where you will save resulting tables and txt files containing stats
+output_dir_tables <- "results/2groups_results/tables"
+
+# this is the output directory where you will save resulting plots
+output_dir_figures <- "results/2groups_results/figures/"
+
+# Make sure output directory exists, and if it doesn't, create one
+if (!dir.exists(output_dir_tables)) {
+  dir.create(output_dir_tables, recursive = TRUE)
+}
+
+if (!dir.exists(output_dir_figures)) {
+  dir.create(output_dir_figures, recursive = TRUE)
+}
+
+# DEFINE MARKERS AND TREATMENT GROUPS: --------------------------------------
+
+# Define markers based on your sample sheet columns, put them in a vector
+markers <- c("olig2", "olig2_pdgfra", "olig2_pdgfraneg")
+
+# Define control and mutant groups based on sample sheet rows, save them as variables
+control_group <- "pcig"     
+mutant_group <- "dnrbpj"  
+```
+
+
+Now, we will read in the data and check that everything is correct.
+```{r}
+# Read input_file as dataframe and save as object
+data <- read.csv(file.path(input_file), stringsAsFactors = FALSE)
 
 ```
 
@@ -86,27 +121,23 @@ data %>%
 ```
 
 # 3. Define markers and treatment groups
-Here, we will define the markers in a list, which we will use later. Make sure they are in quotes and they are written exactly as they are named in the marker columns of the data dataframe. We will also define the treatment groups, making sure they are written exactly as they are written in the "treatment" column of the data dataframe.
+We defined the markers and treatment groups at the beginning of this markdown file.  
+Here, we will just check to make sure everything is correct.
+If they are not correct, check for these in the code chunk where we defined variables and the input file:  
+ * Make sure the input_file path is correct.  
+ * Make sure the markers are in quotes and they are written exactly as they are named in the marker columns of the data dataframe.  
+ * Make sure treatment groups are written exactly as they are written in the "treatment" column of the data dataframe
 
-#### Define markers 
-Change as needed based on your marker column names.
+#### Check markers 
 
 ```{r}
-# Define markers
-markers <- c("olig2", "olig2_pdgfra", "olig2_pdgfraneg")
-
-# Change as needed based on your column names!
-
+print(markers)
 ```
 
-#### Define treatment groups
-Change as needed based on your treatment column.
+#### Check treatment groups
 ```{r}
-# Define control and mutant groups
-control_group <- "pcig"     
-mutant_group <- "dnrbpj"    
-
-# Change as needed based on "treatments"!
+print(control_group)
+print(mutant_group)
 ```
 
 # 4. Organize and summarize data
@@ -139,25 +170,30 @@ summ_data_function <- function(data_df, marker_col) {
 ```
 
 #### Summarize the data for each marker
-We will first initiate a list called "summarized_data". This list is currently empty. But we will fill it with the following for loop, iterating through the "markers" vector that was defined earlier. This for loop goes through each marker in the markers vector, performs the summ_data_function we made earlier, and then stores the result as its own dataframe (data_marker) and then stores that dataframe in the summarized_data list that was originally empty. You can read more about for loops in R [here](https://www.datacamp.com/tutorial/tutorial-on-loops-in-r). 
+Here, we will create dataframes for the summarized data for each marker, and save them as .csv files in the 'results/tables/' directory.  
+
+We will first initiate a list called "summarized_data". This list is currently empty. But we will fill it with the following for loop, iterating through the "markers" vector that was defined earlier. This for loop goes through each marker in the markers vector, performs the summ_data_function we made earlier, and then stores the result as its own dataframe (data_marker) and then stores that dataframe in the summarized_data list that was originally empty. You can read more about for loops in R [here](https://www.datacamp.com/tutorial/tutorial-on-loops-in-r).
+
+Each dataframe for each summarized dataset will be saved as a .csv file. 
 
 ```{r}
-# Initiate a list for the summarized_data
+# initiate list
 summarized_data <- list()
 
-# Iterate through each "marker" in the vector markers defined earlier
+# iterate through each marker and call function
 for (marker in markers) {
-  # Select specific columns from the original data dataframe
-  # and store it in a new dataframe for each marker
-  data_marker <- data %>%
-    select(treatment, brain_id, all_of(marker))
-  
-  # Call summ_data_function to summarize data and store results in the summarized_data list we initiated earlier
-  summarized_data[[marker]] <- summ_data_function(data_marker, marker)
-  
-  # Print summarized data for each marker in its own dataframe
+  summarized_data[[marker]] <- summ_data_function(data, marker)
   print(summarized_data[[marker]])
-  print(paste("Data for", marker, "has been processed."))
+  
+  # write a csv file for each summarized dataset for each marker
+  write.csv(summarized_data[[marker]], 
+            file.path(
+              output_dir_tables, paste0(marker,".csv")), 
+            row.names = FALSE)
+  
+  # Print to let us know that script was completed successfully
+  print(paste("Data for", marker, "has been preprocessed."))
+  
 }
 ```
 
@@ -230,20 +266,36 @@ stats_test <- function(data_df, marker_col, control_group, mutant_group) {
 ```
 
 #### Perform stats tests by calling function
+Here, we will create an output .txt file to store the stats results for each marker.  
 Similar as before, we will now initiate a new list called "stats_results", and iterate through the markers vector again and performs stats test for each marker. The results will be printed below. 
 ```{r}
+# Define output file
+stats_output_file <- file.path(output_dir_tables, "stats_results.txt")
+
+# Open connection to write stats results in the output .txt file
+sink(stats_output_file)
+
 # Initiate a list to store the stats_results
 stats_results <- list()
 
 for (marker in markers) {
-  # Call stats_test function and then store results in stats_results list initiated earlier
+  # Call stats_test function and then store results in
+  # stats_results list initiated earlier
   stats_results[[marker]] <- stats_test(data, 
                                         marker, 
                                         control_group, 
                                         mutant_group)
   
-  print(paste("Stats results for", marker, "has been processed."))
+  # print message and results to .txt file
+  cat(paste("\nStats results for", marker, ":\n"))
+  print(stats_results[[marker]])
 }
+
+# close connection to .txt file
+sink()
+
+# print message to let us know the script ran successfully
+print("Stats tests were performed successfully and saved in results/tables/")
 
 ```
 You can look at the contents of the stats_results and look at specific results by stating the marker dataframe. For example, `stats_results$olig2` tells us that the data for CTRL (pcig) and MUT (dnrbpj) are normally distributed (Shapiro Wilk p > 0.05) and have equal variance (Levene's test p > 0.05). Therefore, the function performed a Student's t-test.
@@ -383,7 +435,7 @@ for (marker in markers) {
   
   # Save barplots as pdf
   # Remove #'s to save. I commented out this code so I don't save over previously saved graphs
-  #ggsave(filename = paste0("results/2groups_results/", marker, "_barplot.pdf"), 
+  #ggsave(filename = paste0(file.path(output_dir_figures, paste0(marker, "_barplot.pdf"), 
          #plot = barplot, 
          #width = 5, 
          #height = 5) # can change the width and height as needed

@@ -1,0 +1,150 @@
+[1] "Shapiro test for pcig p-value: 0.498595282874959"
+[1] "Shapiro test for dnrbpj p-value: 0.893960771663685"
+[1] "Levene test p-value: 0.29026113300653"
+
+Stats results for olig2 :
+$Normality_CTRL
+
+	Shapiro-Wilk normality test
+
+data:  ctrl_data
+W = 0.91506, p-value = 0.4986
+
+
+$Normality_MUT
+
+	Shapiro-Wilk normality test
+
+data:  mut_data
+W = 0.97297, p-value = 0.894
+
+
+$Variance_result
+Levene's Test for Homogeneity of Variance (center = median)
+      Df F value Pr(>F)
+group  1  1.2823 0.2903
+       8               
+
+$Test_Used
+[1] "Student's t-test"
+
+$Test_Result
+
+	Two Sample t-test
+
+data:  ctrl_data and mut_data
+t = 5.8315, df = 8, p-value = 0.0003909
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ 2.433345 5.616616
+sample estimates:
+mean of x mean of y 
+ 7.154331  3.129351 
+
+
+$Mean_CTRL
+[1] 7.154331
+
+$Mean_MUT
+[1] 3.129351
+
+[1] "Shapiro test for pcig p-value: 0.820734313295382"
+[1] "Shapiro test for dnrbpj p-value: 0.460139769032288"
+[1] "Levene test p-value: 0.373304023922363"
+
+Stats results for olig2_pdgfra :
+$Normality_CTRL
+
+	Shapiro-Wilk normality test
+
+data:  ctrl_data
+W = 0.96184, p-value = 0.8207
+
+
+$Normality_MUT
+
+	Shapiro-Wilk normality test
+
+data:  mut_data
+W = 0.90875, p-value = 0.4601
+
+
+$Variance_result
+Levene's Test for Homogeneity of Variance (center = median)
+      Df F value Pr(>F)
+group  1  0.8892 0.3733
+       8               
+
+$Test_Used
+[1] "Student's t-test"
+
+$Test_Result
+
+	Two Sample t-test
+
+data:  ctrl_data and mut_data
+t = 4.9142, df = 8, p-value = 0.001172
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ 1.122867 3.108371
+sample estimates:
+mean of x mean of y 
+ 3.125441  1.009821 
+
+
+$Mean_CTRL
+[1] 3.125441
+
+$Mean_MUT
+[1] 1.009821
+
+[1] "Shapiro test for pcig p-value: 0.488362296289379"
+[1] "Shapiro test for dnrbpj p-value: 0.22176342583822"
+[1] "Levene test p-value: 0.369955917938547"
+
+Stats results for olig2_pdgfraneg :
+$Normality_CTRL
+
+	Shapiro-Wilk normality test
+
+data:  ctrl_data
+W = 0.91341, p-value = 0.4884
+
+
+$Normality_MUT
+
+	Shapiro-Wilk normality test
+
+data:  mut_data
+W = 0.85817, p-value = 0.2218
+
+
+$Variance_result
+Levene's Test for Homogeneity of Variance (center = median)
+      Df F value Pr(>F)
+group  1  0.9024   0.37
+       8               
+
+$Test_Used
+[1] "Student's t-test"
+
+$Test_Result
+
+	Two Sample t-test
+
+data:  ctrl_data and mut_data
+t = 5.904, df = 8, p-value = 0.0003601
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ 1.163595 2.655128
+sample estimates:
+mean of x mean of y 
+ 4.028891  2.119529 
+
+
+$Mean_CTRL
+[1] 4.028891
+
+$Mean_MUT
+[1] 2.119529
+

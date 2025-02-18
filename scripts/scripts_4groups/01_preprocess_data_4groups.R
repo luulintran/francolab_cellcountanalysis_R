@@ -6,23 +6,17 @@ library(ggplot2)
 library(car)
 library(rlang)
 
+# Define variables by running config script
+source("scripts/scripts_4groups/config_4_groups.R")
+
 # 1. READ IN DATA: -------------------------------------------------------------
 
-# Read in as dataframe and save as object
-data <-
-  read.csv(
-    "data/4groups_data/2023-05-01_cd_e15-18_dnrbpj-ascl1-nicd_olig2_pdgfra.csv"
-    )
+# Read input_file as dataframe and save as object
+data <- read.csv(file.path(input_file), stringsAsFactors = FALSE)
 
 # 2. DEFINE MARKERS AND TREATMENT GROUPS: --------------------------------------
 
-# Define markers
-# Change as needed based on your column names!
-markers <- c("olig2", "olig2_pdgfra")
-
-# Define treatment groups
-# Change as needed based on your column names!
-control_group <- "pcig"  
+# markers and control group were defined in config script above
 
 # define all other unique treatments as "mutant"
 mutant_groups <- setdiff(unique(data$treatment), control_group)
@@ -49,6 +43,9 @@ summ_data_function <- function(data_df, marker_col) {
 }
 
 # ******************************************************************************
+# Here, we will create dataframes for the summarized data for each marker,
+# and save them as .csv files in the 'results/tables/' directory.
+
 # initiate list
 summarized_data <- list()
 
@@ -56,6 +53,15 @@ summarized_data <- list()
 for (marker in markers) {
   summarized_data[[marker]] <- summ_data_function(data, marker)
   print(summarized_data[[marker]])
+  
+  # write a csv file for each summarized dataset for each marker
+  write.csv(summarized_data[[marker]], 
+            file.path(
+              output_dir_tables, paste0(marker,".csv")), 
+            row.names = FALSE)
+  
+  # Print to let us know that script was completed successfully
   print(paste("Data for", marker, "has been preprocessed."))
+  
 }
 
